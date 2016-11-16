@@ -1,0 +1,23 @@
+{
+  "name": "jsxjam-cli",
+  "version": "0.1.0",
+  "description": "An npm command line to to manage your JSX files",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jsxjam/jsxjam-cli.git"
+  },
+  "keywords": [
+    "jsx",
+    "react"
+  ],
+  "author": "Kevin Kirchner",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/jsxjam/jsxjam-cli/issues"
+  },
+  "homepage": "https://github.com/jsxjam/jsxjam-cli#readme"
+}
