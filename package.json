@@ -24,6 +24,7 @@
   },
   "homepage": "https://github.com/jsxjam/jsxjam-cli#readme",
   "dependencies": {
+    "commander": "^2.9.0",
     "fs": "0.0.1-security",
     "jsonfile": "^2.4.0",
     "path": "^0.12.7"
