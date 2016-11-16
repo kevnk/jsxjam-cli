@@ -1,0 +1,3 @@
+## JSX Jam
+
+I'm a npm cli tool. Give me a JSON file, and I will create JSX files according to your settings. That's the pan anyways... for now...
