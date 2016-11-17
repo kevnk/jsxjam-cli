@@ -12,6 +12,8 @@ program
     .option('-o, --output [path to dir]', 'directory where the generated JSX files end up. Defaults to ./')
     .option('-e, --ext [extension]', 'file extension used for generated JSX files. Defaults to jsx')
     .option('-s, --stateless', 'use stateless JSX template')
+    .option('--stateless-template [path to stateless template]', 'use your own stateless component template.')
+    .option('-t, --template [path to template]', 'use your own component template. use --stateless-template also if you have stateless components')
     .parse(process.argv);
 
 var jsonFileName = program.input || 'jsxjam.json'
@@ -43,6 +45,8 @@ for (var moduleName in modules) {
 
 var classComponentPath = path.resolve(__dirname, '..', 'templates', 'components', 'classComponent.jsx')
 var statelessComponentPath = path.resolve(__dirname, '..', 'templates', 'components', 'statelessComponent.jsx')
+var customTemplatePath = path.resolve(process.env.PWD, program.template)
+var customStatelessTemplatePath = path.resolve(process.env.PWD, program.statelessTemplate)
 
 for (var componentName in moduleComponents) {
     if (moduleComponents.hasOwnProperty(componentName)) {
@@ -54,6 +58,17 @@ for (var componentName in moduleComponents) {
         var componentSettings = ref.settings || {}
         var isStateless = program.stateless || componentSettings.stateless
         var templatePath = isStateless ? statelessComponentPath : classComponentPath
+
+        // Override template path if options passed in a custom template
+        if (isStateless) {
+            if (program.statelessTemplate) {
+                templatePath = customStatelessTemplatePath
+            }
+        } else {
+            if (program.template) {
+                templatePath = customTemplatePath
+            }
+        }
 
         try {
             var contents = fs.readFileSync(templatePath, '')
