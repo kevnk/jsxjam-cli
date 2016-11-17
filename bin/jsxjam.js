@@ -1,4 +1,13 @@
 #! /usr/bin/env node
+
+/**
+ * TODO List
+ * - json.modules["path/to/component"] = Array of component names
+ * - json.components["componentName"].class or .const to show stateless or not (one template with big if statement)
+ * - settings be merged: .jsxjamrc, then json, then cli options
+ * - find a way to customize import statements (maybe es6 is default, unless other option is passed in)
+ */
+
 var ejs = require('ejs');
 var path = require('path')
 var fs = require('fs')
@@ -11,6 +20,7 @@ program
     .version('0.1.0')
     .option('-i, --input [path]', 'path to the json file to parse')
     .option('-d, --data [json string]', 'json string data you want to pass in manually')
+    // TODO: context: json file or json string - data to be sent to templates
     .option('-o, --output [path]', 'path to directory where the generated JSX files end up. Defaults to ./')
     .option('-e, --ext [extension]', 'file extension used for generated JSX files. Defaults to jsx')
     .option('-s, --stateless', 'use stateless JSX template')
