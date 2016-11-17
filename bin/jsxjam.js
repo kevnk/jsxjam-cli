@@ -5,30 +5,57 @@ var fs = require('fs')
 var fsPath = require('fs-path')
 var program = require('commander')
 var jsonfile = require('jsonfile')
+var _ = require('lodash')
 
 program
     .version('0.1.0')
-    .option('-i, --input [path to json]', 'path to the json file to parse. Defaults to jsxjam.json')
-    .option('-o, --output [path to dir]', 'directory where the generated JSX files end up. Defaults to ./')
+    .option('-i, --input [path]', 'path to the json file to parse')
+    .option('-d, --data [json string]', 'json string data you want to pass in manually')
+    .option('-o, --output [path]', 'path to directory where the generated JSX files end up. Defaults to ./')
     .option('-e, --ext [extension]', 'file extension used for generated JSX files. Defaults to jsx')
     .option('-s, --stateless', 'use stateless JSX template')
-    .option('--stateless-template [path to stateless template]', 'use your own stateless component template.')
-    .option('-t, --template [path to template]', 'use your own component template. use --stateless-template also if you have stateless components')
+    .option('--stateless-template [path]', 'use your own stateless component template.')
+    .option('-t, --template [path]', 'use your own component template. use --stateless-template also if you have stateless components')
     .parse(process.argv);
 
-var jsonFileName = program.input || 'jsxjam.json'
-var jsonFilePath = path.resolve(process.env.PWD, jsonFileName)
-var outputDir = program.output || './'
+var outputDir = path.dirname(program.output) || './'
 var jsxExt = program.ext ? program.ext.replace('.','') : 'jsx'
 jsxExt = '.' + jsxExt
 
-var moduleComponents = {}
-
 // Run through the JSON
-var jsonFile = jsonfile.readFileSync(jsonFilePath)
-var modules = jsonFile.modules || {}
-var settings = jsonFile.settings || {}
+var jsonFile = {
+    modules: {},
+    components: {},
+    settings: {},
+}
+
+if (program.input) {
+    var jsonFileName = program.input
+    var jsonFilePath = path.resolve(process.env.PWD, jsonFileName)
+    if (fs.existsSync(jsonFilePath)) {
+        var jsonData = jsonfile.readFileSync(jsonFilePath)
+        jsonFile = _.extend(jsonFile, jsonData)
+    }
+}
+
+if (program.data) {
+    try {
+        var data = JSON.parse(program.data)
+        jsonFile = _.extend(jsonFile, data)
+    } catch(err) {
+        return console.log(err);
+    }
+}
+
+var modules = jsonFile.modules
+var settings = jsonFile.settings
+var configJsonPath = path.resolve(process.env.PWD, '.jsxjamrc')
+if (fs.existsSync(configJsonPath)) {
+    var configJson = jsonfile.readFileSync(configJsonPath)
+    settings = _.extend(configJson, settings)
+}
 var baseDir = settings.baseDir || ''
+var moduleComponents = {}
 for (var moduleName in modules) {
     if (jsonFile.modules.hasOwnProperty(moduleName)) {
         var module = jsonFile.modules[moduleName]
