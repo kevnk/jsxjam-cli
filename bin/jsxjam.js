@@ -45,29 +45,41 @@ for (var moduleName in modules) {
 
 var classComponentPath = path.resolve(__dirname, '..', 'templates', 'components', 'classComponent.jsx')
 var statelessComponentPath = path.resolve(__dirname, '..', 'templates', 'components', 'statelessComponent.jsx')
-var customTemplatePath = path.resolve(process.env.PWD, program.template)
-var customStatelessTemplatePath = path.resolve(process.env.PWD, program.statelessTemplate)
 
 for (var componentName in moduleComponents) {
     if (moduleComponents.hasOwnProperty(componentName)) {
         var component = moduleComponents[componentName]
         var moduleName = component.moduleName
         var filePath = path.join(process.env.PWD, outputDir, baseDir, moduleName, 'components', componentName + jsxExt)
-        var ref = jsonFile.components[componentName] || {}
-        var componentProps = ref.component || {}
-        var componentSettings = ref.settings || {}
+        var componentRef = jsonFile.components[componentName] || {}
+        var componentProps = componentRef.component || {}
+        componentProps.componentName = componentName
+        var componentSettings = componentRef.settings || {}
         var isStateless = program.stateless || componentSettings.stateless
         var templatePath = isStateless ? statelessComponentPath : classComponentPath
-
         // Override template path if options passed in a custom template
         if (isStateless) {
             if (program.statelessTemplate) {
-                templatePath = customStatelessTemplatePath
+                templatePath = path.resolve(process.env.PWD, program.statelessTemplate)
             }
         } else {
             if (program.template) {
-                templatePath = customTemplatePath
+                templatePath = path.resolve(process.env.PWD, program.template)
             }
+        }
+
+        // Check for child components
+        if (componentProps.props && Array.isArray(componentProps.props.children)) {
+            componentProps.props.children.forEach(function(childComponent){
+                if (jsonFile.components.hasOwnProperty(childComponent)) {
+                    componentProps.children = componentProps.children || {}
+                    componentProps.children[childComponent] = {
+                        // TODO: error check and allow customization
+                        importComponent: "import " + childComponent + " from '" + moduleComponents[childComponent].importPath + "'",
+                        renderComponent: '<' + childComponent + ' />'
+                    }
+                }
+            })
         }
 
         try {

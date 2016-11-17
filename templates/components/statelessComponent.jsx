@@ -1,14 +1,16 @@
-import React from 'react'
+import React from 'react'<% if (!!locals.children) { Object.keys(children).forEach(function(childComponent) { %>
+<%- children[childComponent].importComponent %><% }) } %>
 
-let <%= displayName %> = (props) => {
+let <%= componentName %> = (props) => {
     return (
-        <div className="<%= displayName %>">
-            <%= displayName %>
+        <div className="<%= componentName %>">
+            <%= componentName %><% if (!!locals.children) { Object.keys(children).forEach(function(childComponent) { %>
+            <%- children[childComponent].renderComponent %><% }) } %>
         </div>
     )
 }
 
-<%= displayName %>.propTypes = {}
-<%= displayName %>.defaultProps = {}
+<%= componentName %>.propTypes = {}
+<%= componentName %>.defaultProps = <%- !!locals.defaultProps ? JSON.stringify(defaultProps) : JSON.stringify({}) %>
 
-export default <%= displayName %>
+export default <%= componentName %>
