@@ -83,9 +83,11 @@ try {
 
 
 //-- Get the config
+// TODO: DRY this up and allow all options to from any source
+// Config from options
 var optionsConfig = { output: output };
-if (program.baseDir) {
-    optionsConfig.baseDir = program.baseDir;
+if (program.context) {
+    optionsConfig.context = context
 }
 try {
     var template = program.template ? path.resolve(process.env.PWD, program.template) : templatePath;
@@ -98,12 +100,42 @@ try {
     console.log(makeRed(err));
     return;
 }
+if (program.ext) {
+    optionsConfig.ext = jsxExt;
+}
+if (program.baseDir) {
+    optionsConfig.baseDir = program.baseDir;
+}
+
+// Config from json input
 var jsonConfig = json.config || {};
+try {
+    if (jsonConfig.template) {
+        var templatePath = path.resolve(process.env.PWD, jsonConfig.template)
+        if (fs.existsSync(template)) {
+            jsonConfig.template = templatePath
+        } else {
+            throw new Error('Invalid template file: ' + jsonConfig.template)
+        }
+    }
+} catch(err) {
+    console.log(makeRed(err));
+}
+
+// Config from .jsxjamrc
 var rootConfig = {};
 try {
     var rcFilePath = path.resolve(process.env.PWD, '.jsxjamrc');
     if (fs.existsSync(rcFilePath)) {
         rootConfig = jsonfile.readFileSync(rcFilePath);
+        if (rootConfig.template) {
+            var templatePath = path.resolve(process.env.PWD, rootConfig.template)
+            if (fs.existsSync(template)) {
+                rootConfig.template = templatePath
+            } else {
+                throw new Error('Invalid template file: ' + rootConfig.template)
+            }
+        }
     }
 } catch(err) {
     console.log(makeRed('Invalid .jsxjamrc JSON: ' + err));
