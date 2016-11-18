@@ -1,4 +1,6 @@
-import React from 'react'<% if (!!locals.children) { Object.keys(children).forEach(function(childComponent) { %>
+import React from 'react'<% if (meta.pureRender) { %>
+import PureRenderDecorator from 'pure-render-decorator'<% } if (meta.redux) { %>
+import { connect } from 'react-redux'<% } if (!!locals.children) { Object.keys(children).forEach(function(childComponent) { %>
 <%- children[childComponent].importComponent %><% }) } %>
 <% if (meta.stateless) { %>
 let <%= componentName %> = (props) => {
@@ -8,7 +10,7 @@ let <%= componentName %> = (props) => {
             <%- children[childComponent].renderComponent %><% }) } %>
         </div>
     )
-} <% } else { %>
+}<% } else { %>
 class <%= componentName %> extends React.Component {
     constructor(props) {
         super(props);
@@ -28,5 +30,13 @@ class <%= componentName %> extends React.Component {
 
 <%= componentName %>.propTypes = <%- JSON.stringify(component.propTypes) %>
 <%= componentName %>.defaultProps = <%- JSON.stringify(component.defaultProps) %>
+<% if (meta.pureRender) { %>
+<%= componentName %> = PureRenderDecorator(<%= componentName %>) || <%= componentName %>
+<% } if (meta.redux) { %>
+function mapStateToProps(state) {
+    return {}
+}
 
-export default <%= componentName %>
+export default connect(mapStateToProps)(<%= componentName %>)
+<% } else { %>
+export default <%= componentName %><% } %>

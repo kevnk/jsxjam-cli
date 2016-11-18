@@ -1,6 +1,6 @@
 {
   "name": "jsxjam-cli",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "An npm command line to to manage your JSX files",
   "main": "index.js",
   "scripts": {
