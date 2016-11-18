@@ -51,7 +51,7 @@ function getRenderStr(componentPath) {
 }
 
 program
-    .version('1.0.1')
+    .version('1.1.0')
     .usage('<input> [options]')
     .description('<input> can be a valid json or json string')
     .option('-c, --context [json string]', 'pass in variables to be passed as `context` object to the template file')
@@ -133,7 +133,7 @@ Object.keys(json.components).forEach(function(componentPathStr) {
     var componentData = json.components[componentPathStr]
     var component = _.extend(defaultComponent, componentData.component)
     var componentPath = getCleanComponentPath(componentPathStr)
-    var filePath = path.resolve(config.output, config.baseDir, componentPath + jsxExt)
+    var filePath = path.resolve(config.output, config.baseDir || '', componentPath + jsxExt)
     var children = {}
     if (component.props && Array.isArray(component.props.children)) {
         component.props.children.forEach(function(childComponent) {
