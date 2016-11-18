@@ -4,8 +4,8 @@ import React from 'react'<% if (!!locals.children) { Object.keys(children).forEa
 class <%= componentName %> extends React.Component {
     constructor(props) {
         super(props);
-        this.displayName = <%= displayName %>
-        this.state = <%- !!locals.initialState ? JSON.stringify(initialState) : JSON.stringify({}) %>
+        this.displayName = <%= component.displayName %>
+        this.state = <%- JSON.stringify(component.state) %>
     }
 
     render() {
@@ -18,7 +18,7 @@ class <%= componentName %> extends React.Component {
     }
 }
 
-<%= componentName %>.propTypes = {}
-<%= componentName %>.defaultProps = <%- !!locals.defaultProps ? JSON.stringify(defaultProps) : JSON.stringify({}) %>
+<%= componentName %>.propTypes = <%- JSON.stringify(component.propTypes) %>
+<%= componentName %>.defaultProps = <%- JSON.stringify(component.defaultProps) %>
 
 export default <%= componentName %>

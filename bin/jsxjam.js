@@ -2,10 +2,8 @@
 
 /**
  * TODO List
- * - json.modules["path/to/component"] = Array of component names
- * - json.components["componentName"].class or .const to show stateless or not (one template with big if statement)
  * - settings be merged: .jsxjamrc, then json, then cli options
- * - find a way to customize import statements (maybe es6 is default, unless other option is passed in)
+ * - if config.require then don't use imports
  */
 
 var ejs = require('ejs');
@@ -15,119 +13,185 @@ var fsPath = require('fs-path')
 var program = require('commander')
 var jsonfile = require('jsonfile')
 var _ = require('lodash')
+var colors = require('colors')
+
+function makeRed(text) {
+    return colors.red(text)
+}
+
+function getCleanComponentPath(componentPath) {
+    return _.trim(componentPath).replace(' ','')
+}
+
+function getComponentPathParts(componentPath) {
+    var cleanPath = getCleanComponentPath(componentPath)
+    return cleanPath.split('/')
+}
+
+function getComponentNameFromPath(componentPath) {
+    var pathParts = getComponentPathParts(componentPath)
+    return pathParts[pathParts.length - 1]
+}
+
+function getImportStr(componentPath, parentComponentPath) {
+    var componentName = getComponentNameFromPath(componentPath)
+    var componentPathParts = getComponentPathParts(componentPath)
+    var parentPathParts = getComponentPathParts(parentComponentPath)
+    var relPath = ''
+    for (var i = parentPathParts.length - 1; i > 0; i--) {
+        relPath += '../'
+    }
+    var importPath = path.join(relPath, componentPathParts.join('/'))
+    return "import " + componentName + " from '" + importPath + "'"
+}
+
+function getRenderStr(componentPath) {
+    var componentName = getComponentNameFromPath(componentPath)
+    return '<' + componentName + ' />'
+}
 
 program
-    .version('0.1.0')
-    .option('-i, --input [path]', 'path to the json file to parse')
-    .option('-d, --data [json string]', 'json string data you want to pass in manually')
-    // TODO: context: json file or json string - data to be sent to templates
+    .version('1.0.0')
+    .usage('<input> [options]')
+    .description('<input> can be a valid json or json string')
+    .option('-c, --context [json string]', 'pass in variables to be passed as `context` object to the template file')
     .option('-o, --output [path]', 'path to directory where the generated JSX files end up. Defaults to ./')
+    .option('-t, --template [path]', 'use your own component template')
     .option('-e, --ext [extension]', 'file extension used for generated JSX files. Defaults to jsx')
-    .option('-s, --stateless', 'use stateless JSX template')
-    .option('--stateless-template [path]', 'use your own stateless component template.')
-    .option('-t, --template [path]', 'use your own component template. use --stateless-template also if you have stateless components')
+    .option('--baseDir [path]', 'appended to output path where all generated files go')
     .parse(process.argv);
 
-var outputDir = path.dirname(program.output) || './'
+//-- Get the options
+var context = program.context ? JSON.parse(program.context) : {}
+var output = program.output || process.env.PWD
+var templatePath = path.resolve(__dirname, '..', 'templates', 'component.jsx')
 var jsxExt = program.ext ? program.ext.replace('.','') : 'jsx'
 jsxExt = '.' + jsxExt
 
-// Run through the JSON
-var jsonFile = {
-    modules: {},
+
+//-- Get the JSON
+var json = {
     components: {},
-    settings: {},
+    config: {}
 }
-
-if (program.input) {
-    var jsonFileName = program.input
-    var jsonFilePath = path.resolve(process.env.PWD, jsonFileName)
+if (!program.args[0]) return program.outputHelp(makeRed)
+var input = program.args[0]
+var jsonFilePath = path.resolve(process.env.PWD, input)
+try {
     if (fs.existsSync(jsonFilePath)) {
-        var jsonData = jsonfile.readFileSync(jsonFilePath)
-        jsonFile = _.extend(jsonFile, jsonData)
+        json = _.extend(json, jsonfile.readFileSync(jsonFilePath))
+    } else {
+        json = JSON.parse(input)
     }
+} catch(err) {
+    console.log(makeRed('Invalid JSON: ' + err))
+    return
 }
 
-if (program.data) {
-    try {
-        var data = JSON.parse(program.data)
-        jsonFile = _.extend(jsonFile, data)
-    } catch(err) {
-        return console.log(err);
+
+//-- Get the config
+var optionsConfig = { output: output }
+if (program.baseDir) {
+    optionsConfig.baseDir = program.baseDir
+}
+try {
+    var template = program.template ? path.resolve(process.env.PWD, program.template) : templatePath
+    if (fs.existsSync(template)) {
+        optionsConfig.template = template
+    } else {
+        throw new Error('Invalid template file: ' + template)
     }
+} catch(err) {
+    console.log(makeRed(err))
+    return
+}
+var jsonConfig = json.config || {}
+var rootConfig = {}
+try {
+    var rcFilePath = path.resolve(process.env.PWD, '.jsxjamrc')
+    if (fs.existsSync(rcFilePath)) {
+        rootConfig = jsonfile.readFileSync(rcFilePath)
+    }
+} catch(err) {
+    console.log(makeRed('Invalid .jsxjamrc JSON: ' + err))
 }
 
-var modules = jsonFile.modules
-var settings = jsonFile.settings
-var configJsonPath = path.resolve(process.env.PWD, '.jsxjamrc')
-if (fs.existsSync(configJsonPath)) {
-    var configJson = jsonfile.readFileSync(configJsonPath)
-    settings = _.extend(configJson, settings)
-}
-var baseDir = settings.baseDir || ''
-var moduleComponents = {}
-for (var moduleName in modules) {
-    if (jsonFile.modules.hasOwnProperty(moduleName)) {
-        var module = jsonFile.modules[moduleName]
-        var components = module.components || []
-        components.forEach(function(componentName) {
-            var importPath = path.join('..', '..', moduleName, 'components', componentName)
-            moduleComponents[componentName] = {
-                importPath: importPath,
-                moduleName: moduleName,
+// Merge it all together
+var config = _.extend(rootConfig, jsonConfig, optionsConfig)
+
+
+
+//-- Generate some jsx files!!!
+Object.keys(json.components).forEach(function(componentPathStr) {
+    var componentName = getComponentNameFromPath(componentPathStr)
+    var defaultComponent = {
+        displayName: componentName,
+        state: {},
+        defaultProps: {},
+        propTypes: {},
+    }
+    var componentData = json.components[componentPathStr]
+    var component = _.extend(defaultComponent, componentData.component)
+    var componentPath = getCleanComponentPath(componentPathStr)
+    var filePath = path.resolve(config.output, config.baseDir, componentPath + jsxExt)
+    var children = {}
+    if (component.props && Array.isArray(component.props.children)) {
+        component.props.children.forEach(function(childComponent) {
+            if (json.components.hasOwnProperty(childComponent)) {
+                var importComponent = getImportStr(childComponent, componentPath)
+                var renderComponent = getRenderStr(childComponent)
+                children[childComponent] = {
+                    component: json.components[childComponent],
+                    importComponent: importComponent,
+                    renderComponent: renderComponent,
+                }
             }
         })
     }
-}
 
-var classComponentPath = path.resolve(__dirname, '..', 'templates', 'components', 'classComponent.jsx')
-var statelessComponentPath = path.resolve(__dirname, '..', 'templates', 'components', 'statelessComponent.jsx')
+    var meta = _.clone(componentData)
+    delete meta.component
 
-for (var componentName in moduleComponents) {
-    if (moduleComponents.hasOwnProperty(componentName)) {
-        var component = moduleComponents[componentName]
-        var moduleName = component.moduleName
-        var filePath = path.join(process.env.PWD, outputDir, baseDir, moduleName, 'components', componentName + jsxExt)
-        var componentRef = jsonFile.components[componentName] || {}
-        var componentProps = componentRef.component || {}
-        componentProps.componentName = componentName
-        var componentSettings = componentRef.settings || {}
-        var isStateless = program.stateless || componentSettings.stateless
-        var templatePath = isStateless ? statelessComponentPath : classComponentPath
-        // Override template path if options passed in a custom template
-        if (isStateless) {
-            if (program.statelessTemplate) {
-                templatePath = path.resolve(process.env.PWD, program.statelessTemplate)
-            }
-        } else {
-            if (program.template) {
-                templatePath = path.resolve(process.env.PWD, program.template)
-            }
-        }
-
-        // Check for child components
-        if (componentProps.props && Array.isArray(componentProps.props.children)) {
-            componentProps.props.children.forEach(function(childComponent){
-                if (jsonFile.components.hasOwnProperty(childComponent)) {
-                    componentProps.children = componentProps.children || {}
-                    componentProps.children[childComponent] = {
-                        // TODO: error check and allow customization
-                        importComponent: "import " + childComponent + " from '" + moduleComponents[childComponent].importPath + "'",
-                        renderComponent: '<' + childComponent + ' />'
-                    }
-                }
-            })
-        }
-
-        try {
-            var contents = fs.readFileSync(templatePath, '')
-            var result = ejs.render(contents.toString(), componentProps)
-            fsPath.mkdirSync(path.dirname(filePath))
-            fsPath.writeFileSync(filePath, result)
-            console.log(componentName, '-->', path.join(baseDir, moduleName, 'components', componentName + jsxExt))
-        } catch(err) {
-            return console.log(err);
-        }
+    var fullContext = {
+        config: config,
+        componentName: componentName,
+        componentPath: componentPath,
+        children: children,
+        components: json.components,
+        component: component,
+        meta: meta,
+        context: context
     }
-}
+
+    // TODO: make sure template has everything it needs (e.g. componentName, child component data)
+
+    try {
+        var contents = fs.readFileSync(config.template, '')
+        var result = ejs.render(contents.toString(), fullContext)
+        fsPath.mkdirSync(path.dirname(filePath))
+        fsPath.writeFileSync(filePath, result)
+        console.log(componentName, '-->', filePath)
+    } catch(err) {
+        console.log(makeRed(err))
+        return
+    }
+})
+
+
+
+
+        // // Check for child components
+        // if (componentProps.props && Array.isArray(componentProps.props.children)) {
+        //     componentProps.props.children.forEach(function(childComponent){
+        //         if (json.components.hasOwnProperty(childComponent)) {
+        //             componentProps.children = componentProps.children || {}
+        //             componentProps.children[childComponent] = {
+        //                 // TODO: error check and allow customization
+        //                 importComponent: "import " + childComponent + " from '" + moduleComponents[childComponent].importPath + "'",
+        //                 renderComponent: '<' + childComponent + ' />'
+        //             }
+        //         }
+        //     })
+        // }
+
 

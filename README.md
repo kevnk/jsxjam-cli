@@ -1,8 +1,6 @@
 # JSX Jam
 
-I'm an npm cli tool. Give me a JSON file, and I will generate JSX components.  
-  
-__FYI: currently in development!__
+Give me a JSON file, and I will generate JSX components.  
 
 
 ### Install
@@ -14,55 +12,25 @@ npm install --save-dev jsxjam-cli
 ### Command Line Usage
 ```
 
-  Usage: jsxjam [options]
+  Usage: jsxjam <input> [options]
+
+  <input> can be a valid json or json string
 
   Options:
 
-    -h, --help             output usage information
-    -V, --version          output the version number
-    -i, --input [path]     path to the json file to parse. Defaults to jsxjam.json
-    -o, --output [path]    directory where the generated JSX files end up. Defaults to ./
-    -e, --ext [extension]  file extension used for generated JSX files. Defaults to jsx
+    -h, --help                   output usage information
+    -V, --version                output the version number
+    -c, --context [json string]  pass in variables to be passed as `context` object to the template file
+    -o, --output [path]          path to directory where the generated JSX files end up. Defaults to ./
+    -t, --template [path]        use your own component template
+    -e, --ext [extension]        file extension used for generated JSX files. Defaults to jsx
+    --baseDir [path]             appended to output path where all generated files go
 
 ```
 
-### Example `jsxjam.json` file
-```
-{
-    "modules": {
-        "myModule": {
-            "components": ["MyComponent"]
-        },
-        "otherModule": {
-            "components": ["AnotherComponent"]
-        }
-    },
-    "components": {
-        "MyComponent": {
-            "component": {
-                "displayName": "MyComponent",
-                "initialState": {},
-                "defaultProps": {},
-                "propTypes": {},
-                "props": {
-                    "children": ["AnotherComponent"]
-                }
-            }
-        },
-        "AnotherComponent": {
-            "component": {
-                "displayName": "AnotherComponent"
-            },
-            "settings": {
-                "stateless": true
-            }
-        }
-    },
-    "settings": {
-        "baseDir": "src/scripts"
-    }
-}
-```
+### Examples 
+See [an example in action on the wiki](https://github.com/jsxjam/jsxjam-cli/wiki/Example)
+
 
 
 ### How to Contribute

@@ -1,6 +1,6 @@
 {
   "name": "jsxjam-cli",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "An npm command line to to manage your JSX files",
   "main": "index.js",
   "scripts": {
@@ -24,6 +24,7 @@
   },
   "homepage": "https://github.com/jsxjam/jsxjam-cli#readme",
   "dependencies": {
+    "colors": "^1.1.2",
     "commander": "^2.9.0",
     "ejs": "^2.5.2",
     "fs-path": "0.0.22",
