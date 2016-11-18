@@ -31,7 +31,16 @@ npm install --save-dev jsxjam-cli
 ### Examples 
 See [an example in action on the wiki](https://github.com/jsxjam/jsxjam-cli/wiki/Example)
 
+### Some tips and tricks
 
+- The `config` property in your input JSON can also be set in a `.jsxjamrc` JSON file in the directory from which you're running the command. 
+
+#### Component Options
+__stateless__ - set to `true` and you will get the stateless version of a component
+__pureRender__ - set to `true` and the default template will import [pure-render-decorator](https://www.npmjs.com/package/pure-render-decorator) and use it
+__redux__ - set to `true` and the default template will add `connect` and `mapStateToProps()` to your component
+
+See these in action in [the example on the wiki](https://github.com/jsxjam/jsxjam-cli/wiki/Example)
 
 ### How to Contribute
 #### Initial Setup

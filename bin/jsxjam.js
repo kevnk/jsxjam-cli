@@ -2,7 +2,7 @@
 
 /**
  * TODO List
- * - settings be merged: .jsxjamrc, then json, then cli options
+ * - combine cli options into config with .jsxjam and json.config
  * - if config.require then don't use imports
  */
 
