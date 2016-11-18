@@ -44,7 +44,7 @@ function getRenderStr(componentPath) {
 }
 
 program
-    .version('1.1.0')
+    .version('1.1.1')
     .usage('<input> [options]')
     .description('<input> can be a valid json or json string')
     .option('-c, --context [json string]', 'pass in variables to be passed as `context` object to the template file')
