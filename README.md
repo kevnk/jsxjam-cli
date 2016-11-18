@@ -1,6 +1,4 @@
-[![bitHound Overall Score](https://www.bithound.io/github/jsxjam/jsxjam-cli/badges/score.svg)](https://www.bithound.io/github/jsxjam/jsxjam-cli)
-
-# JSX Jam
+# JSX Jam [![bitHound Overall Score](https://www.bithound.io/github/jsxjam/jsxjam-cli/badges/score.svg)](https://www.bithound.io/github/jsxjam/jsxjam-cli)
 
 Give me a JSON file, and I will generate JSX components.  
 
