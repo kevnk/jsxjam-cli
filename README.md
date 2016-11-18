@@ -1,4 +1,4 @@
-# JSX Jam [![bitHound Overall Score](https://www.bithound.io/github/jsxjam/jsxjam-cli/badges/score.svg)](https://www.bithound.io/github/jsxjam/jsxjam-cli)[![npm version](https://img.shields.io/npm/v/jsxjam-cli.svg?style=flat)](https://www.npmjs.com/package/jsxjam-cli)
+# JSX Jam [![bitHound Overall Score](https://www.bithound.io/github/jsxjam/jsxjam-cli/badges/score.svg)](https://www.bithound.io/github/jsxjam/jsxjam-cli) [![npm version](https://img.shields.io/npm/v/jsxjam-cli.svg?style=flat)](https://www.npmjs.com/package/jsxjam-cli)
 
 Give me a JSON file, and I will generate JSX components.  
 
