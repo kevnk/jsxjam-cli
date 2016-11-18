@@ -1,6 +1,14 @@
 import React from 'react'<% if (!!locals.children) { Object.keys(children).forEach(function(childComponent) { %>
 <%- children[childComponent].importComponent %><% }) } %>
-
+<% if (meta.stateless) { %>
+let <%= componentName %> = (props) => {
+    return (
+        <div className="<%= componentName %>">
+            <%= componentName %><% if (!!locals.children) { Object.keys(children).forEach(function(childComponent) { %>
+            <%- children[childComponent].renderComponent %><% }) } %>
+        </div>
+    )
+} <% } else { %>
 class <%= componentName %> extends React.Component {
     constructor(props) {
         super(props);
@@ -16,7 +24,7 @@ class <%= componentName %> extends React.Component {
             </div>
         )
     }
-}
+}<% } %>
 
 <%= componentName %>.propTypes = <%- JSON.stringify(component.propTypes) %>
 <%= componentName %>.defaultProps = <%- JSON.stringify(component.defaultProps) %>
