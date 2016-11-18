@@ -87,7 +87,7 @@ try {
 // Config from options
 var optionsConfig = { output: output };
 if (program.context) {
-    optionsConfig.context = context
+    optionsConfig.context = context;
 }
 try {
     var template = program.template ? path.resolve(process.env.PWD, program.template) : templatePath;
@@ -113,9 +113,9 @@ try {
     if (jsonConfig.template) {
         var templatePath = path.resolve(process.env.PWD, jsonConfig.template)
         if (fs.existsSync(template)) {
-            jsonConfig.template = templatePath
+            jsonConfig.template = templatePath;
         } else {
-            throw new Error('Invalid template file: ' + jsonConfig.template)
+            throw new Error('Invalid template file: ' + jsonConfig.template);
         }
     }
 } catch(err) {
@@ -129,11 +129,11 @@ try {
     if (fs.existsSync(rcFilePath)) {
         rootConfig = jsonfile.readFileSync(rcFilePath);
         if (rootConfig.template) {
-            var templatePath = path.resolve(process.env.PWD, rootConfig.template)
+            var templatePath = path.resolve(process.env.PWD, rootConfig.template);
             if (fs.existsSync(template)) {
-                rootConfig.template = templatePath
+                rootConfig.template = templatePath;
             } else {
-                throw new Error('Invalid template file: ' + rootConfig.template)
+                throw new Error('Invalid template file: ' + rootConfig.template);
             }
         }
     }
